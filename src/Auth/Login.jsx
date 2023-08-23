@@ -31,10 +31,9 @@ const Login = () => {
       localStorage.setItem("Users", JSON.stringify(updatedData));
       
       // Check if at least two users exist before navigating to Home
-      if (storedData.length >= 2) {
+      if (storedData.length >= 1) {
         navigate("/Home");
       } else {
-        alert("At least two users are needed to continue.");
         navigate('/regestration')
       }
     } else {

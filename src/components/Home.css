@@ -76,7 +76,7 @@
 }
 
 .sent {
-  background-color:skyblue;
+  background-color: skyblue;
   align-self: flex-end;
 }
 
@@ -89,14 +89,16 @@
 }
 
 .message span,
-.message span {
+.message p {
   display: block;
   margin-bottom: 5px;
   font-size: 12px;
-  color:white;
+  color: white;
 }
-.message p{
+
+.message p {
   color: black;
+  font-size: large;
 }
 
 .message-input {
@@ -134,14 +136,23 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 100px) {
   .chat-app {
     flex-direction: column;
   }
 
   .user-list,
   .chat-area {
-    flex: auto;
+    flex: 1;
     border: none;
+  }
+
+  .user-list {
+    border-bottom: 1px solid #ccc;
+  }
+
+  .user-list li {
+    margin-bottom: 0;
+    border-radius: 0;
   }
 }
