@@ -32,7 +32,7 @@ const Login = () => {
       
       // Check if at least two users exist before navigating to Home
       if (storedData.length >= 2) {
-        navigate("/UserList");
+        navigate("/Home");
       } else {
         alert("At least two users are needed to continue.");
         navigate('/regestration')

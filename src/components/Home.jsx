@@ -1,52 +1,144 @@
-import React, { useEffect, useState } from 'react';
-import Header from '../common/Header';
-import './Home.css';
-import Chat from './chat';
-import UserList from './UserList';
+import React, { useState, useEffect } from "react";
+import "./Home.css";
+import { useNavigate } from "react-router-dom";
 
-const Home = () => {
-  const [registeredUsers, setRegisteredUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null); // Track selected user
-  const storedData = JSON.parse(localStorage.getItem('Users')) || [];
-  const [loggedInUser, setLoggedInUser] = useState(null); // Store logged-in user's information
+const Chat = () => {
+  const navigate = useNavigate();
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [messageInput, setMessageInput] = useState("");
 
   useEffect(() => {
-    
-    // Find the logged-in user from storedData using the login_status property
-    const loggedInUserData = storedData.find(user => user.login_status === "login");
-    console.log("loginmsalfngkjlarsnfg",loggedInUserData.username)
-    
-    if (loggedInUserData) {
-      setLoggedInUser(loggedInUserData);
-    }
+    const storedUsers = JSON.parse(localStorage.getItem("Users")) || [];
+    setUsers(storedUsers);
   }, []);
 
-  useEffect(() => {
-    setRegisteredUsers(storedData);
-  }, []);
-
-  // Handler to set the selected user
   const handleUserClick = (user) => {
     setSelectedUser(user);
   };
 
-  return (
-    <>
-      <Header />
+  const generateMessageId = (sender) => {
+    const timestamp = new Date().getTime();
+    const random = Math.floor(Math.random() * 1000);
+    return `${sender}_${timestamp}_${random}`;
+  };
 
-      <div className='container'>
-        <div className='RegisteredUsers'>
-          <ul>
-            
-            <UserList/>
-          </ul>
-        </div>
-        <div className='chat-box'>
-          {selectedUser ? <Chat user={selectedUser} loggedInUser={loggedInUser} /> : <p>Select a user to start chatting</p>}
-        </div>
+  const handleSendMessage = () => {
+    if (messageInput.trim() !== "" && selectedUser) {
+      const loggedInUser = users.find((user) => user.login_status === "login");
+      const chatMessage = {
+        messageId: generateMessageId(loggedInUser.username),
+        sender: loggedInUser.username,
+        content: messageInput,
+        timestamp: new Date().toLocaleString(),
+      };
+
+      const updatedUsers = users.map((user) => {
+        if (
+          user.username === loggedInUser.username ||
+          user.username === selectedUser.username
+        ) {
+          return {
+            ...user,
+            messages: [...user.messages, chatMessage],
+          };
+        }
+        return user;
+      });
+
+      setUsers(updatedUsers);
+      localStorage.setItem("Users", JSON.stringify(updatedUsers));
+      setMessageInput("");
+    }
+  };
+
+  const handleLogout = () => {
+    // Find the user's data and set login_status to an empty string
+    const updatedLocalData = users.map((userData) =>
+      userData.login_status === "login"
+        ? { ...userData, login_status: "" }
+        : userData
+    );
+
+    // Save the updated data back to localStorage
+    localStorage.setItem("Users", JSON.stringify(updatedLocalData));
+
+    navigate("/");
+  };
+  const loggedInUser = users.find((user) => user.login_status === "login");
+
+  return (
+    <div className="chat-app">
+      <div className="user-list">
+        <h2>Users</h2>
+        <ul>
+          {users.map((user, index) => (
+            <li
+              key={index}
+              className={
+                selectedUser && user.email === selectedUser.email
+                  ? "active"
+                  : ""
+              }
+              onClick={() => handleUserClick(user)}
+            >
+              {user.login_status === "" && user.username}
+            </li>
+          ))}
+        </ul>
       </div>
-    </>
+      <div className="chat-area">
+        <div className="header-chat">
+          <div>
+            {loggedInUser &&
+              loggedInUser.login_status === "login" &&
+              loggedInUser.username}
+          </div>
+          <div onClick={handleLogout}>Logout</div>
+        </div>
+        {selectedUser ? (
+          <>
+            <div className="header">{selectedUser.username}</div>
+            <div className="messages">
+              {selectedUser.messages.length > 0 ? (
+                selectedUser.messages.map((message, index) => (
+                  <div
+                    key={message.messageId}
+                    className={`message ${
+                      message.sender === loggedInUser.username
+                        ? "received"
+                        : "sent"
+                    }`}
+                  >
+                    <span>
+                      {message.sender === loggedInUser.username
+                        ? message.sender
+                        : "You"}
+                    </span>
+                    <p>{message.content}</p>
+                    <span>{message.timestamp}</span>
+                  </div>
+                ))
+              ) : (
+                <p>No messages with {selectedUser.username}</p>
+              )}
+            </div>
+            <div className="message-input">
+              <input
+                type="text"
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}
+                placeholder="Type a message..."
+              />
+              <button onClick={handleSendMessage}>Send</button>
+            </div>
+          </>
+        ) : (
+          <p>Select a user to start chatting</p>
+        )}
+      </div>
+    </div>
   );
 };
 
-export default Home;
+export default Chat;
