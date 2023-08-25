@@ -1,4 +1,18 @@
 /* Home.css */
+.container {
+  border-radius: 2px;
+  display: flex;
+  justify-content:center;
+  background-color: #0192C6;
+}
+
+.header {
+
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 10px;
+  color: black;
+}
 
 /* Container for the entire chat app */
 .chat-app {
@@ -55,6 +69,7 @@
 .header-chat div {
   cursor: pointer;
   padding: 10px;
+  
 }
 
 .messages {
@@ -64,7 +79,7 @@
 }
 
 .message {
-  max-width: 30%;
+  min-width:auto;
   padding: 10px;
   margin: 10px 0;
   border-radius: 20px;

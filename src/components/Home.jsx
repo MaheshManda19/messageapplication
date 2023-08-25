@@ -47,9 +47,11 @@ const Chat = () => {
     const chatMessage = {
       messageId: generateMessageId(loggedInUser.username),
       sender: loggedInUser.username,
+      reciever:selectedUser.username,
       content: messageInput,
       timestamp: new Date().toLocaleString(),
     };
+    console.log(selectedUser.username,"reciever")
 
     const updatedUsers = users.map((user) => {
       if (
@@ -122,7 +124,9 @@ const Chat = () => {
         </div>
         {selectedUser ? (
           <>
+          <div className="container">
             <div className="header">{selectedUser.username}</div>
+            </div>
             <div className="messages">
               {selectedUser.messages.map((message, index) => (
                 <div
@@ -148,7 +152,7 @@ const Chat = () => {
                 type="text"
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
-                onKeyUp={handleKeyUp} // Change this line
+                onKeyUp={handleKeyUp} 
                 placeholder="Type a message..."
               />
               <button onClick={handleSendMessage}>Send</button>

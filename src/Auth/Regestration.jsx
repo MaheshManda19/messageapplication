@@ -9,9 +9,8 @@ const Registration = () => {
     username: "",
     password: "",
     mobileNumber: "",
-    dateOfBirth: "",
     login_status : "",
-    messages :[],
+    
   });
 
   const [localData, setLocalData] = useState([]);
@@ -26,7 +25,7 @@ const Registration = () => {
     }
   }, []);
 
-  const { email, username, password, mobileNumber, dateOfBirth, login_status, messages  } = data;
+  const { email, username, password, mobileNumber, dateOfBirth, login_status } = data;
 
   const changeHandler = (e) => {
     const { name, value } = e.target;
@@ -69,7 +68,6 @@ const Registration = () => {
       mobileNumber,
       dateOfBirth,
       login_status ,
-      messages,
     };
 
     const existingUser = localData.find((item) => item.username === username);
@@ -86,9 +84,7 @@ const Registration = () => {
       username: "",
       password: "",
       mobileNumber: "",
-      dateOfBirth: "",
-      messages : [],
-    });
+      });
 
     console.log(data);
     navigate("/");
@@ -177,16 +173,7 @@ const Registration = () => {
             <span className="error">{data.mobileNumberError}</span>
           )}
         </div>
-        <div className="form-group">
-          <label>Date of Birth:</label>
-          <input
-            type="date"
-            name="dateOfBirth"
-            value={dateOfBirth}
-            onChange={changeHandler}
-            required
-          />
-        </div>
+        
 
         <div className="form-group-1">
           <button className="submit">Submit</button>
