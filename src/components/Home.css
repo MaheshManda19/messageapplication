@@ -70,7 +70,7 @@
   border-radius: 20px;
   width: fit-content;
   max-width: 80%;
-  display: flex;
+  display: block;
   flex-direction: column;
 }
 
@@ -196,4 +196,17 @@
   border: none;
   border-radius: 5px;
   color: white;
+}
+.user-list active {
+  background-color: #e5f2ff;
+}
+.group-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color:rgb(184, 228, 246);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }

@@ -13,6 +13,8 @@ const Chat = () => {
   const [groupname, setGroupName] = useState("");
   const [groupMessages, setGroupMessages] = useState([]);
 
+  console.log(selectedGroupUsers, "selectedGroupUsers");
+
   useEffect(() => {
     const storedUsers = JSON.parse(localStorage.getItem("Users")) || [];
     setUsers(storedUsers);
@@ -42,23 +44,33 @@ const Chat = () => {
   const toggleUserSelection = (user) => {
     setSelectedGroupUsers((prevSelectedUsers) => {
       if (prevSelectedUsers.includes(user.username)) {
+        console.log(prevSelectedUsers, "prevSelectedUsers");
         return prevSelectedUsers;
       } else {
         return [...prevSelectedUsers, user.username];
       }
     });
   };
+ 
 
   const handleCreateGroup = () => {
+    const groupExists = groupMessages.some(
+      (group) => group.groupName === groupname
+    );
+
+    if (groupExists) {
+      alert("A group with the same name already exists.");
+      return;
+    }
     const newGroup = {
-      name: groupname,
+      groupName: groupname,
       members: selectedGroupUsers,
-      messages: [],
     };
     const updatedGroupMessages = [...groupMessages, newGroup];
     setGroupMessages(updatedGroupMessages);
     localStorage.setItem("Groupmessages", JSON.stringify(updatedGroupMessages));
     toggleGroupModal();
+    setGroupName("");
   };
 
   const handleSendMessage = () => {
@@ -66,10 +78,11 @@ const Chat = () => {
 
     if (selectedUser.members) {
       const groupChat = {
-        sender: loggedInUser.username,
-        receiver: selectedUser.members,
         messages: [
           {
+            groupName: selectedUser.groupName,
+            sender: loggedInUser.username,
+            receiver: selectedUser.members,
             content: messageInput,
             timestamp: new Date().toLocaleString(),
           },
@@ -108,8 +121,8 @@ const Chat = () => {
     navigate("/");
   };
 
-  const loggedInUser = users.find((user) => user.login_status === "login");
 
+  const loggedInUser = users.find((user) => user.login_status === "login");
   const filteredMessages = messages.filter(
     (message) =>
       (message.sender === loggedInUser?.username &&
@@ -119,16 +132,19 @@ const Chat = () => {
   );
 
   const filteredGroupMessages = groupMessages.filter((group) => {
-    if (
-      selectedUser &&
-      selectedUser.members &&
-      group.receiver &&
-      group.receiver.every((member) => selectedUser.members.includes(member))
-    ) {
-      return true;
+    if (group.messages) {
+      return group.messages.some((message) => {
+        return (
+          message.groupName === selectedUser?.groupName &&
+          message.receiver.some((receiver) =>
+            selectedUser.members.includes(receiver)
+          )
+        );
+      });
     }
-    return false;
+    return false; // Filter out groups without messages
   });
+
 
   return (
     <div className="chat-app">
@@ -160,27 +176,45 @@ const Chat = () => {
         {groupMessages
           .filter(
             (group) =>
-              group.name && group.members.includes(loggedInUser.username)
+              group.groupName && group.members.includes(loggedInUser.username)
           )
           .map((group, groupIndex) => (
-            <div key={groupIndex}>
-              <p onClick={() => handleUserClick(group)}>{group.name}</p>
+            <div
+              key={groupIndex}
+              className={
+                selectedUser && group.groupName === selectedUser.groupName
+                  ? "active-group"
+                  : "group"
+              }
+            >
+              <p
+                style={{
+                  cursor: "pointer",
+                  padding: "10px",
+                  borderRadius: "35px",
+                  backgroundColor:
+                    selectedUser && group.groupName === selectedUser.groupName
+                      ? "#e5ebf3"
+                      : "transparent",
+                }}
+                onClick={() => handleUserClick(group)}
+              >
+                {group.groupName}
+              </p>
             </div>
           ))}
       </div>
 
-      {/* Group creation modal */}
       {showGroupModal && (
         <div className="group-modal">
           <h2>Select Users for Group Chat</h2>
           <ul>
             {users.map((user) => (
               <li
+                style={{ cursor: "pointer", paddingBottom: "5px" }}
                 key={user.email}
                 onClick={() => toggleUserSelection(user)}
-                className={
-                  selectedGroupUsers.includes(user.username) ? "selected" : ""
-                }
+                className={selectedGroupUsers.includes(user) ? "selected" : ""}
               >
                 {user.username}
               </li>
@@ -207,7 +241,7 @@ const Chat = () => {
         </div>
         <div className="msg-header">
           <div>
-            {selectedUser && (selectedUser.username || selectedUser.name)}
+            {selectedUser && (selectedUser.username || selectedUser.groupName)}
           </div>
         </div>
 
@@ -234,31 +268,27 @@ const Chat = () => {
                   <span>{message.timestamp}</span>
                 </div>
               ))}
-            {selectedGroupUsers &&
-              filteredGroupMessages.map((group, index) => (
-                <div
-                  key={index}
-                  className={`message ${
-                    group.sender === loggedInUser?.username
-                      ? "sent"
-                      : "received"
-                  }`}
-                >
-                  {group.messages.map((message, msgIndex) => (
-                    <div key={msgIndex}>
-                      <span style={{ fontSize: "15px", color: "darkgray" }}>
-                        {group.sender === loggedInUser?.username ? (
+            <div>
+              {filteredGroupMessages.map((group, groupIndex) => (
+                <div key={groupIndex}>
+                  {group.messages.map((message, messageIndex) => (
+                    <div key={messageIndex}>
+                      <span style={{ fontSize: "15px", color: "darkgrey" }}>
+                        {message.sender === loggedInUser?.username ? (
                           <p>You</p>
                         ) : (
-                          <p>{group.sender}</p>
+                          <p>{message.sender}</p>
                         )}
                       </span>
                       <p>{message.content}</p>
-                      <span>{message.timestamp}</span>
+                      <span style={{ fontSize: "13px", color: "darkgray" }}>
+                        {message.timestamp}
+                      </span>
                     </div>
                   ))}
                 </div>
               ))}
+            </div>
           </div>
         </div>
 
