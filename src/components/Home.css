@@ -14,6 +14,19 @@
   overflow-y: auto;
   width: 20%;
 }
+.group-message {
+  background-color: #a7f2e0; /* Custom color for group messages */
+  color:black;
+  border-radius: 20px;
+  padding: 8px 12px;
+  margin: 8px 0;
+  align-self: flex-start; /* Group messages on the left side */
+}
+
+.group-message.sent {
+  align-self: flex-end; /* Sent group messages on the right side */
+}
+
 
 .user-list h2 {
   margin: 0;
