@@ -12,8 +12,7 @@ const Chat = () => {
   const [selectedGroupUsers, setSelectedGroupUsers] = useState([]);
   const [groupname, setGroupName] = useState("");
   const [groupMessages, setGroupMessages] = useState([]);
-
-  console.log(selectedGroupUsers, "selectedGroupUsers");
+  const [darkTheme, setDarkTheme] = useState(false);
 
   useEffect(() => {
     const storedUsers = JSON.parse(localStorage.getItem("Users")) || [];
@@ -135,9 +134,11 @@ const Chat = () => {
     }
     return false;
   });
-
+  const toggleDarkTheme = () => {
+    setDarkTheme(!darkTheme);
+  };
   return (
-    <div className="chat-app">
+    <div className={`chat-app ${darkTheme ? "dark-theme" : ""}`}>
       <div className="user-list">
         <div className="user-list-header">
           <h2>Contacts</h2>
@@ -239,6 +240,9 @@ const Chat = () => {
         <div className="chat-header">
           <div>{loggedInUser && loggedInUser.username}</div>
           <div onClick={handleLogout}>Logout</div>
+          <button className="dark-theme-button" onClick={toggleDarkTheme}>
+            {darkTheme ? "Light Theme" : "Dark Theme"}
+          </button>
         </div>
         <div className="msg-header">
           <div>
@@ -273,16 +277,16 @@ const Chat = () => {
               {filteredGroupMessages.map((group, groupIndex) => (
                 <div key={groupIndex}>
                   {group.messages.map((message, messageIndex) => (
-                    <div  className="group-message" key={messageIndex}>
-                      <span style={{ fontSize: "15px", color: "darkgrey" }}>
+                    <div className="group-message" key={messageIndex}>
+                      <span style={{ fontSize: "15px", color: "grey" }}>
                         {message.sender === loggedInUser?.username ? (
                           <p>You</p>
                         ) : (
                           <p>{message.sender}</p>
                         )}
                       </span>
-                      <p >{message.content}</p>
-                      <span style={{ fontSize: "13px", color: "darkgray" }}>
+                      <p>{message.content}</p>
+                      <span style={{ fontSize: "13px", color: "grey " }}>
                         {message.timestamp}
                       </span>
                     </div>

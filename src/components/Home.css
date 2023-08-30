@@ -1,11 +1,9 @@
-/* Container for the entire chat app */
 .chat-app {
   display: flex;
   height: 100vh;
   font-family: Arial, sans-serif;
 }
 
-/* User list on the left side */
 .user-list {
   flex: 1;
   background-color: #f5f5f5;
@@ -15,17 +13,16 @@
   width: 20%;
 }
 .group-message {
-  background-color: #a7f2e0; /* Custom color for group messages */
+  background-color: #a7f2e0; 
   color:black;
   border-radius: 20px;
   padding: 8px 12px;
   margin: 8px 0;
-  align-self: flex-start; /* Group messages on the left side */
+  align-self: flex-start; 
+  width: 30%;
 }
 
-.group-message.sent {
-  align-self: flex-end; /* Sent group messages on the right side */
-}
+
 
 
 .user-list h2 {
@@ -49,7 +46,6 @@
   background-color: white;
 }
 
-/* Chat area on the right side */
 .chat-content {
   flex: 3;
   display: flex;
@@ -87,19 +83,18 @@
   flex-direction: column;
 }
 
-/* Add styles for sent messages */
 .message.sent {
-  background-color: #dcf8c6;
+  background-color:cadetblue;
   color: black;
   border-radius: 10px;
   padding: 8px 12px;
   margin: 8px 0;
   align-self: flex-start;
+  font-weight: bold;
 }
 
-/* Add styles for received messages */
 .message.received {
-  background-color: #f0f0f0;
+  background-color:rgb(242, 255, 255);
   color: black;
   border-radius: 10px;
   padding: 8px 12px;
@@ -112,7 +107,7 @@
 }
 
 .message span {
-  font-weight: bold;
+  color:lightgrey;
 }
 
 .message-content {
@@ -156,7 +151,6 @@
   cursor: pointer;
 }
 
-/* Placeholder for user selection */
 .message-input p {
   margin: 0;
   padding: 20px;
@@ -201,10 +195,10 @@
 /* Dark theme button */
 .dark-theme-button {
   position: absolute;
-  top: -8px;
+  top: -4px;
   right: 10px;
   cursor: pointer;
-  padding: 5px 10px;
+  padding:  5px;
   background-color: #0084ff;
   border: none;
   border-radius: 5px;
