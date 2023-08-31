@@ -9,10 +9,9 @@ const Chat = () => {
   const [messageInput, setMessageInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [showGroupModal, setShowGroupModal] = useState(false);
-  const [selectedGroupUsers, setSelectedGroupUsers] = useState([]);
+  const [selectedGroupUsers] = useState([]);
   const [groupname, setGroupName] = useState("");
   const [groupMessages, setGroupMessages] = useState([]);
-  const [darkTheme, setDarkTheme] = useState(false);
 
   useEffect(() => {
     const storedUsers = JSON.parse(localStorage.getItem("Users")) || [];
@@ -37,29 +36,23 @@ const Chat = () => {
   const toggleGroupModal = () => {
     setShowGroupModal(!showGroupModal);
   };
-  const toggleUserSelection = (user) => {
-    setSelectedGroupUsers((prevSelectedUsers) => {
-      if (prevSelectedUsers.includes(user.username)) {
-        return prevSelectedUsers.filter(
-          (username) => username === user.username
-        );
-      } else {
-        return [...prevSelectedUsers, user.username];
-      }
-    });
-  };
   const handleCreateGroup = () => {
-    const groupExists = groupMessages.some(
+    const groupExists = groupMessages.find(
       (group) => group.groupName === groupname
     );
 
     if (groupExists) {
-      alert("A group with the same name already exists.");
+      alert(
+        "A group with the same name already exists. Try with another group name"
+      );
       return;
     }
     const newGroup = {
       groupName: groupname,
-      members: selectedGroupUsers,
+      admin: loggedInUser.username,
+      created: new Date().toLocaleString(),
+      users: users.map((user) => user.username),
+      grpMessages: [],
     };
     const updatedGroupMessages = [...groupMessages, newGroup];
     setGroupMessages(updatedGroupMessages);
@@ -68,39 +61,46 @@ const Chat = () => {
     setGroupName("");
   };
   const handleSendMessage = () => {
+    if(messageInput.trim() !== ""){
     const loggedInUser = users.find((user) => user.login_status === "login");
-    if (selectedUser.members) {
-      const groupChat = {
-        messages: [
-          {
-            groupName: selectedUser.groupName,
-            sender: loggedInUser.username,
-            receiver: selectedUser.members,
-            content: messageInput,
-            timestamp: new Date().toLocaleString(),
-          },
-        ],
+
+    if (selectedUser.users) {
+      const newMessage = {
+        sender: loggedInUser.username,
+        content: messageInput,
+        timestamp: new Date().toLocaleString(),
       };
-      const updatedGroupMessages = [...groupMessages, groupChat];
+      const updatedGroupMessages = groupMessages.map((group) => {
+        if (group.groupName === selectedUser.groupName) {
+          return {
+            ...group,
+            grpMessages: [...group.grpMessages, newMessage],
+          };
+        }
+        return group;
+      });
+
       setGroupMessages(updatedGroupMessages);
       localStorage.setItem(
         "Groupmessages",
         JSON.stringify(updatedGroupMessages)
       );
     } else {
-      const chatMessage = {
+      const newMessage = {
         sender: loggedInUser.username,
         receiver: selectedUser.username,
         content: messageInput,
         timestamp: new Date().toLocaleString(),
       };
-      const updatedMessages = [...messages, chatMessage];
+      const updatedMessages = [...messages, newMessage];
       setMessages(updatedMessages);
       localStorage.setItem("Messages", JSON.stringify(updatedMessages));
     }
 
     setMessageInput("");
+  }
   };
+
   const handleLogout = () => {
     const updatedLocalData = users.map((userData) =>
       userData.login_status === "login"
@@ -112,6 +112,11 @@ const Chat = () => {
 
     navigate("/");
   };
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleSendMessage();
+    }
+  };
 
   const loggedInUser = users.find((user) => user.login_status === "login");
   const filteredMessages = messages.filter(
@@ -121,28 +126,19 @@ const Chat = () => {
       (message.sender === selectedUser?.username &&
         message.receiver === loggedInUser?.username)
   );
-  const filteredGroupMessages = groupMessages.filter((group) => {
-    if (group.messages) {
-      return group.messages.some((message) => {
-        return (
-          message.groupName === selectedUser?.groupName &&
-          message.receiver.some((receiver) =>
-            selectedUser.members.includes(receiver)
-          )
-        );
-      });
-    }
-    return false;
-  });
-  const toggleDarkTheme = () => {
-    setDarkTheme(!darkTheme);
-  };
+  console.log(loggedInUser?.username);
+  const filteredGroupMessages = groupMessages.filter(
+    (group) =>
+      group.groupName === selectedUser?.groupName &&
+      group.users.includes(loggedInUser.username)
+  );
+
   return (
-    <div className={`chat-app ${darkTheme ? "dark-theme" : ""}`}>
+    <div className="chat-app">
       <div className="user-list">
         <div className="user-list-header">
           <h2>Contacts</h2>
-          <div onClick={() => toggleGroupModal()}>Create a Group</div>
+          <div className="create-group" onClick={() => toggleGroupModal()}>Create a Group</div>
         </div>
 
         <ul>
@@ -164,15 +160,12 @@ const Chat = () => {
         </ul>
         <div>Groups</div>
         {groupMessages
-          .filter(
-            (group) =>
-              group.groupName && group.members.includes(loggedInUser.username)
-          )
+          .filter((group) => group.users.includes(loggedInUser.username))
           .map((group, groupIndex) => (
             <div
               key={groupIndex}
               className={
-                selectedUser && group.groupName === selectedUser.groupName
+                group.groupName === selectedUser.groupName
                   ? "active-group"
                   : "group"
               }
@@ -196,24 +189,6 @@ const Chat = () => {
       </div>
       {showGroupModal && (
         <div className="group-modal">
-          <h2>Select Users for Group Chat</h2>
-          <div>Please Select login user also From below</div>
-          <ul>
-            {users.map((user) => (
-              <li
-                style={{
-                  cursor: "pointer",
-                  paddingBottom: "5px",
-                  listStyle: "none",
-                }}
-                key={user.email}
-                onClick={() => toggleUserSelection(user)}
-                className={selectedGroupUsers.includes(user) ? "selected" : ""}
-              >
-                {user.username}
-              </li>
-            ))}
-          </ul>
           <input
             type="text"
             value={groupname}
@@ -221,6 +196,7 @@ const Chat = () => {
             placeholder="Group Name...."
             required
           />
+          <div className="create-group">{selectedGroupUsers}</div>
           <button
             onClick={() => {
               if (groupname.trim() !== "") {
@@ -240,9 +216,6 @@ const Chat = () => {
         <div className="chat-header">
           <div>{loggedInUser && loggedInUser.username}</div>
           <div onClick={handleLogout}>Logout</div>
-          <button className="dark-theme-button" onClick={toggleDarkTheme}>
-            {darkTheme ? "Light Theme" : "Dark Theme"}
-          </button>
         </div>
         <div className="msg-header">
           <div>
@@ -263,32 +236,30 @@ const Chat = () => {
                   }`}
                 >
                   <span style={{ fontSize: "15px" }}>
-                    {message.sender === loggedInUser?.username ? (
-                      <p>You</p>
-                    ) : (
-                      <p>{message.sender}</p>
-                    )}
+                    {message.sender === loggedInUser?.username
+                      ? "You"
+                      : message.sender}
                   </span>
                   <p>{message.content}</p>
                   <span>{message.timestamp}</span>
                 </div>
               ))}
-            <div>
+
+            <div className="groupmessage-list">
               {filteredGroupMessages.map((group, groupIndex) => (
-                <div key={groupIndex}>
-                  {group.messages.map((message, messageIndex) => (
-                    <div className="group-message" key={messageIndex}>
-                      <span style={{ fontSize: "15px", color: "grey" }}>
-                        {message.sender === loggedInUser?.username ? (
-                          <p>You</p>
-                        ) : (
-                          <p>{message.sender}</p>
-                        )}
-                      </span>
+                <div key={groupIndex} className="group-message">
+                  {group.grpMessages.map((message, messageIndex) => (
+                    <div
+                      key={messageIndex}
+                      className={`message ${
+                        message.sender === loggedInUser?.username
+                          ? "sent"
+                          : "received"
+                      }`}
+                    >
+                      <span>{message.sender}</span>
                       <p>{message.content}</p>
-                      <span style={{ fontSize: "13px", color: "grey " }}>
-                        {message.timestamp}
-                      </span>
+                      <span>{message.timestamp}</span>
                     </div>
                   ))}
                 </div>
@@ -302,6 +273,7 @@ const Chat = () => {
             type="text"
             value={messageInput}
             onChange={(e) => setMessageInput(e.target.value)}
+            onKeyDown={handleKeyPress}
             placeholder="Type a message..."
           />
           <button onClick={handleSendMessage}>Send</button>
