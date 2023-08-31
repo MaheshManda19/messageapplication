@@ -116,6 +116,7 @@ const Chat = () => {
     if (e.key === "Enter") {
       handleSendMessage();
     }
+    
   };
 
   const loggedInUser = users.find((user) => user.login_status === "login");
